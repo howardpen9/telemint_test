@@ -1,6 +1,8 @@
 import { Blockchain, SandboxContract } from '@ton-community/sandbox';
 import { Cell, toNano } from 'ton-core';
-import { Telmint } from '../wrappers/Collection';
+import { NftCollection } from '../wrappers/Collection';
+import { NF } from '../wrappers/Item';
+
 import '@ton-community/test-utils';
 import { compile } from '@ton-community/blueprint';
 

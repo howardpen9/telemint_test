@@ -1,5 +1,37 @@
 #include "common.fc";
 
+;; Storage
+;; telemint_data$_ 
+;; touched:Bool subwallet_id:uint32 public_key:bits256 collection_content:^Cell nft_item_code:^Cell
+;; full_domain:^TelemintText royalty_params:^NftRoyaltyParams = TelemintData;
+(int, int, int, cell, cell, slice, cell) unpack_collection_data() inline {
+    var cs = get_data().begin_parse();
+    var res = (
+        cs~load_int(1), ;; touched
+        cs~load_uint(32), ;; subwallet_id
+        cs~load_uint(256), ;; owner_key
+        cs~load_ref(), ;; collection_content
+        cs~load_ref(), ;; item_code / nft_item_code
+        cs~load_text_ref(), ;; full_domain
+        cs~load_ref() ;; royalty_params
+    );
+    cs.end_parse();
+    return res;
+}
+
+_ save_collection_data(int touched, int subwallet_id, int owner_key, cell content, cell item_code, slice full_domain, cell royalty_params) impure inline {
+    cell data = begin_cell()
+            .store_int(touched, 1)
+            .store_uint(subwallet_id, 32)
+            .store_uint(owner_key, 256)
+            .store_ref(content)
+            .store_ref(item_code)
+            .store_ref(begin_cell().store_text(full_domain).end_cell())
+            .store_ref(royalty_params)
+            .end_cell();
+    set_data(data);
+}
+
 _ unwrap_signed_cmd(slice signed_cmd, int public_key, int subwallet_id, int msg_value) impure {
     (slice signature, int hash, int got_subwallet_id, int valid_since, int valid_till, slice cmd)
             = unpack_signed_cmd(signed_cmd);
@@ -11,7 +43,7 @@ _ unwrap_signed_cmd(slice signed_cmd, int public_key, int subwallet_id, int msg_
     return cmd;
 }
 
-_ unpack_deploy_msg_v2(slice cs) inline {
+_ unpack_deploy_msg_v2(slice cs) inline { ;; load_data?  
     var res = (
         cs~load_text(), ;; token_name
         cs~load_ref(), ;; content
@@ -108,7 +140,7 @@ cell get_nft_content(int index, cell individual_nft_content) method_id {
     return individual_nft_content;
 }
 
-cell get_item_code() method_id {
-    var (_, _, _, _, item_code, _, _) = unpack_collection_data();
-    return item_code;
-}
+;; cell get_item_code() method_id {
+;;     var (_, _, _, _, item_code, _, _) = unpack_collection_data();
+;;     return item_code;
+;; }

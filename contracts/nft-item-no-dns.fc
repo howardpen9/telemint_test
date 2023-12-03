@@ -1,5 +1,21 @@
 #include "common.fc";
 
+(cell, cell) unpack_item_data() inline {
+    var cs = get_data().begin_parse();
+    var res = (
+        cs~load_ref(),
+        cs~load_maybe_ref()
+    );
+    cs.end_parse();
+    return res;
+
+    ;; collection_content
+    ;; item_code / nft_item_code
+}
+
+_ save_item_data(config, state) impure inline {
+    set_data(pack_item_data(config, state));
+}
 
 int send_money(int my_balance, slice address, int value) impure {
     int amount_to_send = min(my_balance - min_tons_for_storage, value);

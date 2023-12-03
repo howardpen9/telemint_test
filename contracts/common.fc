@@ -175,19 +175,12 @@ slice calculate_address(int wc, cell state_init) inline {
     return res;
 }
 
-cell pack_item_config(int item_index, slice collection_address) inline {
-    return begin_cell()
-            .store_uint(item_index, 256)
-            .store_slice(collection_address)
-            .end_cell();
-}
-
-(cell, cell) unpack_item_data() inline {
-    var cs = get_data().begin_parse();
-    var res = (cs~load_ref(), cs~load_maybe_ref());
-    cs.end_parse();
-    return res;
-}
+;; (cell, cell) unpack_item_data() inline {
+;;     var cs = get_data().begin_parse();
+;;     var res = (cs~load_ref(), cs~load_maybe_ref());
+;;     cs.end_parse();
+;;     return res;
+;; }
 
 cell pack_nft_royalty_params(int numerator, int denominator, slice destination) inline {
     return begin_cell()
@@ -206,13 +199,6 @@ cell pack_nft_royalty_params(int numerator, int denominator, slice destination) 
     );
     cs.end_parse();
     return res;
-}
-
-cell pack_item_data(cell config, cell state) inline {
-    return begin_cell()
-            .store_ref(config)
-            .store_maybe_ref(state)
-            .end_cell();
 }
 
 cell pack_item_content(cell nft_content, cell dns, cell token_info) inline {
@@ -255,8 +241,23 @@ cell pack_item_state(slice owner_address, cell content, cell auction, cell royal
             .end_cell();
 }
 
-_ save_item_data(config, state) impure inline {
-    set_data(pack_item_data(config, state));
+;; _ save_item_data(config, state) impure inline {
+;;     set_data(pack_item_data(config, state));
+;; }
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+cell pack_item_config(int item_index, slice collection_address) inline {
+    return begin_cell()
+            .store_uint(item_index, 256)
+            .store_slice(collection_address)
+            .end_cell();
+}
+
+cell pack_item_data(cell config, cell state) inline {
+    return begin_cell()
+            .store_ref(config)
+            .store_maybe_ref(state)
+        .end_cell();
 }
 
 cell pack_item_state_init(int item_index, cell item_code) inline {
@@ -264,6 +265,7 @@ cell pack_item_state_init(int item_index, cell item_code) inline {
     var item_data = pack_item_data(item_config, null());
     return pack_state_init(item_code, item_data);
 }
+;; ******************************* /
 
 cell pack_teleitem_msg_deploy(slice sender_address, int bid, cell info, cell content, cell auction_config, cell royalty_params) inline {
     return begin_cell()
@@ -286,33 +288,33 @@ cell pack_teleitem_msg_deploy(slice sender_address, int bid, cell info, cell con
         cs~load_ref());
 }
 
-(int, int, int, cell, cell, slice, cell) unpack_collection_data() inline {
-    var cs = get_data().begin_parse();
-    var res = (
-        cs~load_int(1), ;; touched
-        cs~load_uint(32), ;; subwallet_id
-        cs~load_uint(256), ;; owner_key
-        cs~load_ref(), ;; content
-        cs~load_ref(), ;; item_code
-        cs~load_text_ref(), ;; full_domain
-        cs~load_ref() ;; royalty_params
-    );
-    cs.end_parse();
-    return res;
-}
+;; (int, int, int, cell, cell, slice, cell) unpack_collection_data() inline {
+;;     var cs = get_data().begin_parse();
+;;     var res = (
+;;         cs~load_int(1), ;; touched
+;;         cs~load_uint(32), ;; subwallet_id
+;;         cs~load_uint(256), ;; owner_key
+;;         cs~load_ref(), ;; content
+;;         cs~load_ref(), ;; item_code
+;;         cs~load_text_ref(), ;; full_domain
+;;         cs~load_ref() ;; royalty_params
+;;     );
+;;     cs.end_parse();
+;;     return res;
+;; }
 
-_ save_collection_data(int touched, int subwallet_id, int owner_key, cell content, cell item_code, slice full_domain, cell royalty_params) impure inline {
-    cell data = begin_cell()
-            .store_int(touched, 1)
-            .store_uint(subwallet_id, 32)
-            .store_uint(owner_key, 256)
-            .store_ref(content)
-            .store_ref(item_code)
-            .store_ref(begin_cell().store_text(full_domain).end_cell())
-            .store_ref(royalty_params)
-            .end_cell();
-    set_data(data);
-}
+;; _ save_collection_data(int touched, int subwallet_id, int owner_key, cell content, cell item_code, slice full_domain, cell royalty_params) impure inline {
+;;     cell data = begin_cell()
+;;             .store_int(touched, 1)
+;;             .store_uint(subwallet_id, 32)
+;;             .store_uint(owner_key, 256)
+;;             .store_ref(content)
+;;             .store_ref(item_code)
+;;             .store_ref(begin_cell().store_text(full_domain).end_cell())
+;;             .store_ref(royalty_params)
+;;             .end_cell();
+;;     set_data(data);
+;; }
 
 _ unpack_signed_cmd(slice cs) inline {
     return (
